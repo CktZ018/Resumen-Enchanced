@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resúmenes Enhanced — Dani &amp; Barbie</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(circle at top, #17274b 0%, #0b1120 65%, #070b14 100%);
+      color: #dbeafe;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-disney { font-family: 'Cinzel', serif; }
+    .font-serif-review { font-family: 'Lora', serif; }
+    .magic-card {
+      background: rgba(19, 31, 58, 0.86);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(8px);
+    }
+    .magic-card:hover { border-color: rgba(251, 191, 36, 0.55); }
+    .gold-gradient { background: linear-gradient(135deg, #fde68a 0%, #fbbf24 50%, #d97706 100%); }
+    .spoiler-blur {
+      filter: blur(6px);
+      user-select: none;
+      cursor: pointer;
+      transition: filter 0.3s ease;
+    }
+    .spoiler-blur.revealed { filter: blur(0); user-select: auto; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #263b6e; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="bg-[#0d162c]/90 border-b border-amber-400/25 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span class="text-amber-300 text-xl">✦</span>
+        <div>
+          <h1 class="font-disney text-amber-300 font-bold text-lg tracking-wider leading-none">RESÚMENES ENHANCED</h1>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-sky-300/80 mt-0.5">Dani &amp; Barbie</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 bg-[#090f1e] p-1 rounded-full border border-amber-400/20">
+        <button type="button" id="btnUserDani" onclick="switchUser('hombre')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition">
+          <span class="w-2 h-2 rounded-full bg-sky-400"></span> Dani
+        </button>
+        <button type="button" id="btnUserBarbie" onclick="switchUser('mujer')" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition">
+          <span class="w-2 h-2 rounded-full bg-pink-400"></span> Barbie
+        </button>
+      </div>
+
+      <button type="button" onclick="openModal()" class="gold-gradient hover:brightness-105 text-[#0b1120] font-bold text-xs px-4 py-2 rounded-full transition shadow-lg shadow-amber-500/20">
+        ✦ Nuevo Análisis
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl w-full mx-auto px-4 py-6 flex-1">
+    <section class="grid grid-cols-3 gap-3 mb-6">
+      <div class="magic-card p-3.5 rounded-2xl text-center">
+        <p class="text-[11px] uppercase tracking-wider text-amber-300/80">Películas Vistas</p>
+        <p id="statTotal" class="text-2xl font-bold text-white mt-1">0</p>
+      </div>
+      <div class="magic-card p-3.5 rounded-2xl text-center">
+        <p class="text-[11px] uppercase tracking-wider text-sky-300">Entradas de Dani</p>
+        <p id="statDani" class="text-2xl font-bold text-white mt-1">0</p>
+      </div>
+      <div class="magic-card p-3.5 rounded-2xl text-center">
+        <p class="text-[11px] uppercase tracking-wider text-pink-300">Entradas de Barbie</p>
+        <p id="statBarbie" class="text-2xl font-bold text-white mt-1">0</p>
+      </div>
+    </section>
+
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-400/20 pb-3 mb-5">
+      <div class="flex gap-5 text-xs font-semibold uppercase tracking-wider">
+        <button type="button" onclick="setFilter('todos')" id="filter-todos" class="text-amber-300 border-b-2 border-amber-300 pb-3 -mb-3.5 transition">Todos</button>
+        <button type="button" onclick="setFilter('hombre')" id="filter-hombre" class="text-slate-400 hover:text-sky-300 pb-3 -mb-3.5 transition">Dani</button>
+        <button type="button" onclick="setFilter('mujer')" id="filter-mujer" class="text-slate-400 hover:text-pink-300 pb-3 -mb-3.5 transition">Barbie</button>
+      </div>
+      <span id="activeUserLabel" class="text-xs text-slate-300">Sesión activa: <strong class="text-sky-300">Dani</strong></span>
+    </div>
+
+    <div id="feedContainer" class="space-y-5"></div>
+  </main>
+
+  <div id="reviewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="magic-card rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-amber-400/20 pb-3 mb-4">
+        <h2 class="font-disney text-amber-300 font-bold text-lg tracking-wide">✦ Nueva Entrada</h2>
+        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <form id="reviewForm" onsubmit="saveReview(event)" class="space-y-4">
+        <div class="relative">
+          <label class="block text-xs uppercase font-semibold text-amber-200/80 mb-1">Buscar Película *</label>
+          <input type="text" id="movieSearch" autocomplete="off" oninput="searchTMDB(this.value)" placeholder="Escribe el nombre de la película..." class="w-full bg-[#090f1e] border border-amber-400/40 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-300">
+          <div id="searchResults" class="hidden absolute left-0 right-0 mt-1 bg-[#0d162c] border border-amber-400/40 rounded-xl shadow-2xl max-h-60 overflow-y-auto z-50 divide-y divide-sky-400/10"></div>
+        </div>
+
+        <div id="selectedMoviePreview" class="hidden bg-[#090f1e]/90 border border-sky-400/25 rounded-xl p-3 flex items-center gap-3">
+          <img id="previewPoster" src="" alt="Poster" class="w-12 h-16 object-cover rounded border border-amber-400/30">
+          <div class="flex-1">
+            <p id="previewTitle" class="text-sm font-bold text-white"></p>
+            <p id="previewYear" class="text-xs text-slate-400"></p>
+          </div>
+          <span class="text-[10px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/30 px-2 py-0.5 rounded-full">✓ Póster listo</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Título final *</label>
+            <input type="text" id="movieTitle" required class="w-full bg-[#090f1e] border border-sky-400/25 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-amber-300">
+          </div>
+          <div>
+            <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Año *</label>
+            <input type="number" id="movieYear" required min="1900" max="2030" class="w-full bg-[#090f1e] border border-sky-400/25 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-amber-300">
+          </div>
+        </div>
+        <input type="hidden" id="moviePosterPath">
+
+        <div>
+          <label class="block text-xs uppercase font-semibold text-amber-200/80 mb-1">Estrellas (0.5 a 5) *</label>
+          <select id="movieRating" class="w-full bg-[#090f1e] border border-sky-400/25 rounded-lg px-3 py-2 text-sm text-amber-300 font-bold focus:outline-none focus:border-amber-300">
+            <option value="5">★★★★★ (5.0)</option>
+            <option value="4.5">★★★★½ (4.5)</option>
+            <option value="4" selected>★★★★ (4.0)</option>
+            <option value="3.5">★★★½ (3.5)</option>
+            <option value="3">★★★ (3.0)</option>
+            <option value="2.5">★★½ (2.5)</option>
+            <option value="2">★★ (2.0)</option>
+            <option value="1.5">★½ (1.5)</option>
+            <option value="1">★ (1.0)</option>
+            <option value="0.5">½ (0.5)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase font-semibold text-amber-200/80 mb-1">Tu resumen *</label>
+          <textarea id="movieSummary" required rows="2" placeholder="Escribe tu propio resumen de la película..." class="w-full bg-[#090f1e] border border-sky-400/25 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-300"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase font-semibold text-amber-200/80 mb-1">Tu análisis *</label>
+          <textarea id="movieAnalysis" required rows="4" placeholder="Tu análisis de personajes, música, dirección de arte, simbolismos..." class="w-full bg-[#090f1e] border border-sky-400/25 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-300"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
+            <input type="checkbox" id="hasSpoilers" class="accent-amber-400 w-4 h-4">
+            <span>Contiene spoilers en el análisis</span>
+          </label>
+
+          <button type="submit" class="gold-gradient hover:brightness-105 text-[#0b1120] font-bold text-sm px-5 py-2 rounded-full transition">
+            Publicar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const TMDB_API_KEY = "07223d32f9baf425cf6a30301b722aee";
+    const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/w500";
+
+    let currentUser = "hombre";
+    let currentFilter = "todos";
+    let searchTimeout = null;
+    let reviews = [];
+
+    try {
+      const saved = JSON.parse(localStorage.getItem("resumenesEnhancedReviews"));
+      if (Array.isArray(saved)) {
+        reviews = saved;
+      }
+    } catch (err) {
+      reviews = [];
+    }
+
+    function persistReviews() {
+      try {
+        localStorage.setItem("resumenesEnhancedReviews", JSON.stringify(reviews));
+      } catch (err) {
+        // Ignorar si el almacenamiento del navegador está bloqueado
+      }
+    }
+
+    function escapeAttr(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function searchTMDB(query) {
+      clearTimeout(searchTimeout);
+      const resultsBox = document.getElementById("searchResults");
+
+      if (!query || query.trim().length < 2) {
+        resultsBox.classList.add("hidden");
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query.trim())}&language=es-MX`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if (!data.results || data.results.length === 0) {
+            resultsBox.innerHTML = `<div class="p-3 text-xs text-slate-400">No se encontraron resultados.</div>`;
+            resultsBox.classList.remove("hidden");
+            return;
+          }
+
+          resultsBox.innerHTML = data.results.slice(0, 6).map((movie) => {
+            const year = movie.release_date ? movie.release_date.split("-")[0] : "N/A";
+            const thumb = movie.poster_path
+              ? `${TMDB_IMG_BASE}${movie.poster_path}`
+              : "https://placehold.co/92x138/131f3a/fbbf24?text=?";
+
+            return `
+              <button type="button"
+                data-title="${escapeAttr(movie.title)}"
+                data-year="${escapeAttr(year)}"
+                data-poster="${escapeAttr(movie.poster_path || "")}"
+                onclick="handleMovieClick(this)"
+                class="w-full text-left p-2.5 hover:bg-[#17274b] flex items-center gap-3 transition">
+                <img src="${thumb}" alt="" class="w-9 h-12 object-cover rounded flex-shrink-0">
+                <div>
+                  <p class="text-xs font-bold text-white">${escapeAttr(movie.title)}</p>
+                  <p class="text-[11px] text-slate-400">${escapeAttr(year)}</p>
+                </div>
+              </button>
+            `;
+          }).join("");
+
+          resultsBox.classList.remove("hidden");
+        } catch (err) {
+          resultsBox.innerHTML = `<div class="p-3 text-xs text-rose-400">Error de conexión.</div>`;
+          resultsBox.classList.remove("hidden");
+        }
+      }, 350);
+    }
+
+    function handleMovieClick(btn) {
+      selectMovie(
+        btn.getAttribute("data-title") || "",
+        btn.getAttribute("data-year") || "N/A",
+        btn.getAttribute("data-poster") || ""
+      );
+    }
+
+    function selectMovie(title, year, posterPath) {
+      document.getElementById("movieTitle").value = title;
+      if (year !== "N/A" && year !== "") {
+        document.getElementById("movieYear").value = year;
+      }
+      document.getElementById("moviePosterPath").value = posterPath;
+
+      document.getElementById("searchResults").classList.add("hidden");
+      document.getElementById("movieSearch").value = "";
+
+      const preview = document.getElementById("selectedMoviePreview");
+      document.getElementById("previewTitle").textContent = title;
+      document.getElementById("previewYear").textContent = year;
+      document.getElementById("previewPoster").src = posterPath
+        ? `${TMDB_IMG_BASE}${posterPath}`
+        : "https://placehold.co/92x138/131f3a/fbbf24?text=Sin+Poster";
+      preview.classList.remove("hidden");
+    }
+
+    function switchUser(genero) {
+      currentUser = genero;
+      const btnDani = document.getElementById("btnUserDani");
+      const btnBarbie = document.getElementById("btnUserBarbie");
+      const label = document.getElementById("activeUserLabel");
+
+      if (genero === "hombre") {
+        btnDani.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-200 border border-sky-400/40 transition";
+        btnBarbie.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-pink-200 transition";
+        label.innerHTML = 'Sesión activa: <strong class="text-sky-300">Dani</strong>';
+      } else {
+        btnBarbie.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-pink-500/20 text-pink-200 border border-pink-400/40 transition";
+        btnDani.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-sky-200 transition";
+        label.innerHTML = 'Sesión activa: <strong class="text-pink-300">Barbie</strong>';
+      }
+      renderFeed();
+    }
+
+    function renderStars(rating) {
+      const num = parseFloat(rating) || 0;
+      const full = Math.floor(num);
+      const half = num % 1 !== 0;
+      return "★".repeat(full) + (half ? "½" : "");
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      ["todos", "hombre", "mujer"].forEach((f) => {
+        const el = document.getElementById(`filter-${f}`);
+        if (f === filter) {
+          el.className = "text-amber-300 border-b-2 border-amber-300 pb-3 -mb-3.5 transition";
+        } else {
+          el.className = "text-slate-400 hover:text-amber-200 pb-3 -mb-3.5 transition";
+        }
+      });
+      renderFeed();
+    }
+
+    function toggleReaction(id, type) {
+      const target = reviews.find((r) => r.id === id);
+      if (!target) return;
+      target.reactions = target.reactions || { magic: 0, heart: 0 };
+      target.reactions[type] = (target.reactions[type] || 0) + 1;
+      persistReviews();
+      renderFeed();
+    }
+
+    function addComment(e, id) {
+      e.preventDefault();
+      const input = document.getElementById(`commentInput-${id}`);
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const target = reviews.find((r) => r.id === id);
+      if (!target) return;
+      target.comments = target.comments || [];
+      target.comments.push({
+        autor: currentUser === "hombre" ? "Dani" : "Barbie",
+        texto: text
+      });
+      input.value = "";
+      persistReviews();
+      renderFeed();
+    }
+
+    function renderPosterElement(rev) {
+      if (rev.posterPath && rev.posterPath.trim() !== "") {
+        return `<img src="${TMDB_IMG_BASE}${escapeAttr(rev.posterPath)}" onerror="this.style.display='none'" alt="${escapeAttr(rev.titulo)}" class="w-28 sm:w-32 h-44 object-cover rounded-xl shadow-lg border border-amber-400/30 mx-auto sm:mx-0 flex-shrink-0">`;
+      }
+      return `
+        <div class="w-28 sm:w-32 h-44 rounded-xl shadow-lg border border-amber-400/30 mx-auto sm:mx-0 flex-shrink-0 bg-gradient-to-b from-[#1e3263] to-[#0b1328] p-3 flex flex-col justify-between text-center">
+          <span class="text-amber-300 text-xs">✦</span>
+          <p class="font-disney text-white text-xs font-bold leading-snug line-clamp-4">${escapeAttr(rev.titulo)}</p>
+          <span class="text-[10px] text-sky-300/80">${escapeAttr(rev.anio)}</span>
+        </div>
+      `;
+    }
+
+    function renderFeed() {
+      const container = document.getElementById("feedContainer");
+      container.innerHTML = "";
+
+      const uniqueMovies = new Set(
+        reviews.map((r) => (r.titulo || "").toLowerCase().trim()).filter(Boolean)
+      ).size;
+      document.getElementById("statTotal").textContent = uniqueMovies;
+      document.getElementById("statDani").textContent = reviews.filter((r) => r.genero === "hombre").length;
+      document.getElementById("statBarbie").textContent = reviews.filter((r) => r.genero === "mujer").length;
+
+      const filtered = currentFilter === "todos"
+        ? reviews
+        : reviews.filter((r) => r.genero === currentFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="magic-card rounded-2xl text-center py-12 text-slate-400 text-sm">Aún no hay entradas aquí.</div>`;
+        return;
+      }
+
+      filtered.forEach((rev) => {
+        const isDani = rev.genero === "hombre";
+        const isOwner = rev.genero === currentUser;
+        const badgeStyle = isDani
+          ? "bg-sky-500/15 text-sky-300 border-sky-400/35"
+          : "bg-pink-500/15 text-pink-300 border-pink-400/35";
+
+        const counterpart = reviews.find(
+          (r) =>
+            (r.titulo || "").toLowerCase().trim() === (rev.titulo || "").toLowerCase().trim() &&
+            r.genero !== rev.genero
+        );
+        const matchBadge = counterpart
+          ? `<span class="text-[11px] bg-amber-400/15 text-amber-300 border border-amber-400/35 px-2.5 py-0.5 rounded-full">✦ ${escapeAttr(counterpart.autor)} también la calificó (${escapeAttr(counterpart.rating)}★)</span>`
+          : "";
+
+        const deleteBtnHtml = isOwner
+          ? `<button type="button" onclick="deleteReview(${rev.id})" class="text-[11px] text-slate-400 hover:text-rose-400 transition">Eliminar</button>`
+          : "";
+
+        const reactions = rev.reactions || { magic: 0, heart: 0 };
+        const comments = rev.comments || [];
+
+        const commentsHtml = comments.map((c) => `
+          <div class="text-xs bg-[#131f3a]/80 border border-sky-400/15 rounded-lg px-3 py-1.5">
+            <strong class="${c.autor === "Dani" ? "text-sky-300" : "text-pink-300"}">${escapeAttr(c.autor)}:</strong>
+            <span class="text-slate-200 ml-1">${escapeAttr(c.texto)}</span>
+          </div>
+        `).join("");
+
+        const card = document.createElement("article");
+        card.className = "magic-card rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-5 transition";
+        card.innerHTML = `
+          ${renderPosterElement(rev)}
+
+          <div class="flex-1 flex flex-col justify-between">
+            <div>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2.5 py-0.5 rounded-full border ${badgeStyle}">
+                    ${isDani ? "✦ Dani" : "✦ Barbie"}
+                  </span>
+                  <span class="text-xs text-slate-400">${escapeAttr(rev.fecha)}</span>
+                </div>
+                ${matchBadge}
+              </div>
+
+              <div class="flex flex-wrap items-baseline gap-2 mb-2">
+                <h3 class="font-disney text-white font-bold text-xl leading-tight">${escapeAttr(rev.titulo)}</h3>
+                <span class="text-sm text-slate-400">${escapeAttr(rev.anio)}</span>
+                <span class="text-amber-300 font-bold tracking-wider ml-1">${renderStars(rev.rating)}</span>
+              </div>
+
+              <div class="mb-3">
+                <span class="text-[10px] uppercase tracking-wider text-sky-300/80 font-bold block mb-0.5">Resumen de ${escapeAttr(rev.autor)}</span>
+                <p class="text-sm text-slate-100 font-medium">${escapeAttr(rev.resumen)}</p>
+              </div>
+
+              <div class="bg-[#090f1e]/80 rounded-xl p-3.5 border border-sky-400/15 mb-3">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[10px] uppercase tracking-wider text-amber-300/80 font-bold">Análisis de ${escapeAttr(rev.autor)}</span>
+                  ${rev.spoilers ? '<span class="text-[10px] text-amber-400 font-semibold">✦ Spoilers (Clic para revelar)</span>' : ""}
+                </div>
+                <p onclick="this.classList.toggle('revealed')" class="font-serif-review text-sm leading-relaxed text-slate-200 ${rev.spoilers ? "spoiler-blur" : ""}">
+                  ${escapeAttr(rev.analisis)}
+                </p>
+              </div>
+
+              <div class="bg-[#090f1e]/55 rounded-xl p-3 border border-amber-400/10 space-y-2.5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <button type="button" onclick="toggleReaction(${rev.id}, 'magic')" class="text-xs bg-[#131f3a] hover:border-amber-300/60 border border-amber-400/20 text-amber-200 px-2.5 py-1 rounded-full transition">
+                      ✦ Magia (${reactions.magic || 0})
+                    </button>
+                    <button type="button" onclick="toggleReaction(${rev.id}, 'heart')" class="text-xs bg-[#131f3a] hover:border-pink-300/60 border border-pink-400/20 text-pink-200 px-2.5 py-1 rounded-full transition">
+                      ♥ Me encantó (${reactions.heart || 0})
+                    </button>
+                  </div>
+                  ${deleteBtnHtml}
+                </div>
+
+                ${commentsHtml ? `<div class="space-y-1.5 pt-1">${commentsHtml}</div>` : ""}
+
+                <form onsubmit="addComment(event, ${rev.id})" class="flex gap-2 pt-1">
+                  <input id="commentInput-${rev.id}" type="text" placeholder="Responder o comentar como ${currentUser === "hombre" ? "Dani" : "Barbie"}..." class="flex-1 bg-[#090f1e] border border-sky-400/20 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-300">
+                  <button type="submit" class="text-xs bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/30 font-semibold px-3 py-1.5 rounded-lg transition">
+                    Enviar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openModal() {
+      const modal = document.getElementById("reviewModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("reviewModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      document.getElementById("searchResults").classList.add("hidden");
+      document.getElementById("selectedMoviePreview").classList.add("hidden");
+    }
+
+    function saveReview(e) {
+      e.preventDefault();
+      const newReview = {
+        id: Date.now(),
+        titulo: document.getElementById("movieTitle").value.trim(),
+        anio: document.getElementById("movieYear").value,
+        posterPath: document.getElementById("moviePosterPath").value.trim(),
+        autor: currentUser === "hombre" ? "Dani" : "Barbie",
+        genero: currentUser,
+        rating: parseFloat(document.getElementById("movieRating").value),
+        resumen: document.getElementById("movieSummary").value.trim(),
+        analisis: document.getElementById("movieAnalysis").value.trim(),
+        spoilers: document.getElementById("hasSpoilers").checked,
+        fecha: "Recién publicado",
+        reactions: { magic: 0, heart: 0 },
+        comments: []
+      };
+
+      reviews.unshift(newReview);
+      persistReviews();
+      document.getElementById("reviewForm").reset();
+      document.getElementById("moviePosterPath").value = "";
+      closeModal();
+      renderFeed();
+
+      if (typeof window.guardarResena === "function") {
+        window.guardarResena(
+          newReview.titulo,
+          newReview.rating,
+          newReview.resumen,
+          newReview.posterPath
+        );
+      } else {
+        console.error("Firebase no está disponible; la reseña se guardó localmente.");
+        alert("No se pudo conectar con Firebase. La reseña quedó guardada localmente.");
+      }
+    }
+
+    function deleteReview(id) {
+      const target = reviews.find((r) => r.id === id);
+      if (!target || target.genero !== currentUser) return;
+      reviews = reviews.filter((r) => r.id !== id);
+      persistReviews();
+      renderFeed();
+    }
+
+    switchUser("hombre");
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBJd3xJNFv2gl49g1oX8G6yYFhDgryWa6c",
+      authDomain: "resumenes-enhanced.firebaseapp.com",
+      projectId: "resumenes-enhanced",
+      storageBucket: "resumenes-enhanced.firebasestorage.app",
+      messagingSenderId: "434202542550",
+      appId: "1:434202542550:web:aaefcfcccaf3a527ed2477",
+      measurementId: "G-FLBQYWHBRT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function guardarResena(titulo, calificacion, comentario, posterPath) {
+      try {
+        const docRef = await addDoc(collection(db, "resenas"), {
+          titulo: titulo,
+          calificacion: Number(calificacion),
+          comentario: comentario,
+          posterPath: posterPath,
+          creadoEn: serverTimestamp()
+        });
+        console.log("Reseña guardada exitosamente con ID: ", docRef.id);
+        alert("¡Reseña guardada con éxito!");
+      } catch (error) {
+        console.error("Error al agregar la reseña: ", error);
+        alert("Ocurrió un error al guardar.");
+      }
+    }
+
+    window.guardarResena = guardarResena;
+  </script>
+</body>
+</html>
